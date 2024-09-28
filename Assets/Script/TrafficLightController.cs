@@ -1,4 +1,5 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 public class TrafficLightController : MonoBehaviour
 {
@@ -6,11 +7,13 @@ public class TrafficLightController : MonoBehaviour
     [SerializeField] private GameObject yellowLight;
     [SerializeField] private GameObject greenLight;
 
-    [SerializeField] private float redLightDuration = 5f;
-    [SerializeField] private float yellowLightDuration = 2f;
-    [SerializeField] private float greenLightDuration = 5f;
+    [SerializeField] private Material redMaterial;
+    [SerializeField] private Material yellowMaterial;
+    [SerializeField] private Material greenMaterial;
+    [SerializeField] private Material defaultMaterial;
 
-    private float _timer;
+    private const float LightDuration = 1f;
+
     private enum LightState { Red, YellowToGreen, Green, YellowToRed }
     private LightState _currentState;
 
@@ -18,43 +21,40 @@ public class TrafficLightController : MonoBehaviour
     {
         _currentState = LightState.Red;
         UpdateLights();
-        _timer = redLightDuration;
+        SwitchStateAsync().Forget();
     }
 
-    private void Update()
+    private async UniTaskVoid SwitchStateAsync()
     {
-        _timer -= Time.deltaTime;
-        if (_timer <= 0) SwitchState();
-    }
-
-    private void SwitchState()
-    {
-        switch (_currentState)
+        while (true)
         {
-            case LightState.Red:
-                _currentState = LightState.YellowToGreen;
-                _timer = yellowLightDuration;
-                break;
-            case LightState.YellowToGreen:
-                _currentState = LightState.Green;
-                _timer = greenLightDuration;
-                break;
-            case LightState.Green:
-                _currentState = LightState.YellowToRed;
-                _timer = yellowLightDuration;
-                break;
-            case LightState.YellowToRed:
-                _currentState = LightState.Red;
-                _timer = redLightDuration;
-                break;
+            switch (_currentState)
+            {
+                case LightState.Red:
+                    await UniTask.Delay((int)(LightDuration * 1000));
+                    _currentState = LightState.YellowToGreen;
+                    break;
+                case LightState.YellowToGreen:
+                    await UniTask.Delay((int)(LightDuration * 1000));
+                    _currentState = LightState.Green;
+                    break;
+                case LightState.Green:
+                    await UniTask.Delay((int)(LightDuration * 1000));
+                    _currentState = LightState.YellowToRed;
+                    break;
+                case LightState.YellowToRed:
+                    await UniTask.Delay((int)(LightDuration * 1000));
+                    _currentState = LightState.Red;
+                    break;
+            }
+            UpdateLights();
         }
-        UpdateLights();
     }
 
     private void UpdateLights()
     {
-        redLight.GetComponent<Renderer>().material.color = _currentState == LightState.Red ? Color.red : Color.gray;
-        yellowLight.GetComponent<Renderer>().material.color = (_currentState == LightState.YellowToGreen || _currentState == LightState.YellowToRed) ? Color.yellow : Color.gray;
-        greenLight.GetComponent<Renderer>().material.color = _currentState == LightState.Green ? Color.green : Color.gray;
+        redLight.GetComponent<Renderer>().material = _currentState == LightState.Red ? redMaterial : defaultMaterial;
+        yellowLight.GetComponent<Renderer>().material = (_currentState == LightState.YellowToGreen || _currentState == LightState.YellowToRed) ? yellowMaterial : defaultMaterial;
+        greenLight.GetComponent<Renderer>().material = _currentState == LightState.Green ? greenMaterial : defaultMaterial;
     }
 }

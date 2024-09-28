@@ -1,0 +1,19 @@
+=================
+Bokeh FX by Archanor VFX
+=================
+
+This asset features 6 scenes of bokeh effects that can be used as animated backgrounds.
+
+Feel free to contact me if you need help with the asset or if you have problems with particle effects.
+
+=================
+Usage
+=================
+
+In contrast to my other assets, these effects are saved in the scenes rather than in prefabs. 
+
+In the demo scenes you should find a Canvas which can be deleted to get rid of the scene selection menu in the bottom right.
+
+=================
+
+https://archanor.com/support.html
