@@ -7,12 +7,13 @@ public class TrafficLightController : MonoBehaviour
     [SerializeField] private GameObject yellowLight;
     [SerializeField] private GameObject greenLight;
 
-    [SerializeField] private Material redMaterial;
-    [SerializeField] private Material yellowMaterial;
-    [SerializeField] private Material greenMaterial;
+    [SerializeField] private Material[] redMaterials;
+    [SerializeField] private Material[] yellowMaterials;
+    [SerializeField] private Material[] greenMaterials;
     [SerializeField] private Material defaultMaterial;
 
     private const float LightDuration = 1f;
+    private const int MillisecondsInSecond = 1000;
 
     private enum LightState { Red, YellowToGreen, Green, YellowToRed }
     private LightState _currentState;
@@ -31,19 +32,19 @@ public class TrafficLightController : MonoBehaviour
             switch (_currentState)
             {
                 case LightState.Red:
-                    await UniTask.Delay((int)(LightDuration * 1000));
+                    await UniTask.Delay((int)(LightDuration * MillisecondsInSecond));
                     _currentState = LightState.YellowToGreen;
                     break;
                 case LightState.YellowToGreen:
-                    await UniTask.Delay((int)(LightDuration * 1000));
+                    await UniTask.Delay((int)(LightDuration * MillisecondsInSecond));
                     _currentState = LightState.Green;
                     break;
                 case LightState.Green:
-                    await UniTask.Delay((int)(LightDuration * 1000));
+                    await UniTask.Delay((int)(LightDuration * MillisecondsInSecond));
                     _currentState = LightState.YellowToRed;
                     break;
                 case LightState.YellowToRed:
-                    await UniTask.Delay((int)(LightDuration * 1000));
+                    await UniTask.Delay((int)(LightDuration * MillisecondsInSecond));
                     _currentState = LightState.Red;
                     break;
             }
@@ -53,8 +54,15 @@ public class TrafficLightController : MonoBehaviour
 
     private void UpdateLights()
     {
-        redLight.GetComponent<Renderer>().material = _currentState == LightState.Red ? redMaterial : defaultMaterial;
-        yellowLight.GetComponent<Renderer>().material = (_currentState == LightState.YellowToGreen || _currentState == LightState.YellowToRed) ? yellowMaterial : defaultMaterial;
-        greenLight.GetComponent<Renderer>().material = _currentState == LightState.Green ? greenMaterial : defaultMaterial;
+        redLight.GetComponent<Renderer>().material = _currentState == LightState.Red ? GetRandomMaterial(redMaterials) : defaultMaterial;
+        yellowLight.GetComponent<Renderer>().material = (_currentState == LightState.YellowToGreen || _currentState == LightState.YellowToRed) ? GetRandomMaterial(yellowMaterials) : defaultMaterial;
+        greenLight.GetComponent<Renderer>().material = _currentState == LightState.Green ? GetRandomMaterial(greenMaterials) : defaultMaterial;
+    }
+
+    private Material GetRandomMaterial(Material[] materials)
+    {
+        if (materials.Length == 0)
+            return defaultMaterial;
+        return materials[Random.Range(0, materials.Length)];
     }
 }
